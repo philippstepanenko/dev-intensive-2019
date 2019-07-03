@@ -37,7 +37,7 @@ object Utils {
         "ю" to "yu",
         "я" to "ya")
 
-    fun ParseFullName(fullName : String?) : Pair<String?,String?>{
+    fun parseFullName(fullName : String?) : Pair<String?,String?>{
         val parts : List<String>? = fullName?.split(" ")
         var firstName = parts?.getOrNull(0)
         var lastName = parts?.getOrNull(1)
