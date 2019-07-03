@@ -44,10 +44,10 @@ object Utils {
         return MustShowString(firstName) to MustShowString(lastName)
     }
 
-    fun MustShowString(s : String?) : String{
+    fun MustShowString(s : String?) : String?{
         when (!s.isNullOrEmpty()){
             true -> return s
-            false -> return "null"
+            false -> return null
         }
     }
 
