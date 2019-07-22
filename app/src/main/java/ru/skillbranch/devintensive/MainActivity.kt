@@ -45,8 +45,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener{
         messageEt.setOnEditorActionListener{_, actionId, _ ->
             when(actionId){
                 EditorInfo.IME_ACTION_DONE -> {
-                    sendAndHideKeyboard()
                     Log.d("M_MainActivity","onEditorActionListener")
+                    sendAnswer()
+                    hideKeyboard()
                     true
                 }
                 else -> false
@@ -97,8 +98,33 @@ class MainActivity : AppCompatActivity(), View.OnClickListener{
     override fun onClick(v: View?) {
         if(v?.id == R.id.iv_send){
             Log.d("M_MainActivity","onClick")
-            sendAndHideKeyboard()
+            if (validateAnswer()){
+                sendAnswer()
+                hideKeyboard()
+            }else{
+                showError()
+                hideKeyboard()
+            }
+
         }
+    }
+
+    private fun showError(){
+        val errorMessage = when(benderObj.question){
+            Bender.Question.NAME -> "Имя должно начинаться с заглавной буквы"
+            Bender.Question.PROFESSION -> "Профессия должна начинаться со строчной буквы"
+            Bender.Question.MATERIAL -> "Материал не должен содержать цифр"
+            Bender.Question.BDAY -> "Год моего рождения должен содержать только цифры"
+            Bender.Question.SERIAL -> "Серийный номер содержит только цифры, и их 7"
+            else -> "На этом все, вопросов больше нет"
+        }
+        hideKeyboard()
+        textTxt.text = "$errorMessage\n${benderObj.question.question}"
+        messageEt.text.clear()
+    }
+
+    private fun validateAnswer(): Boolean {
+        return benderObj.question.validate(messageEt.text.toString())
     }
 
     private fun sendAnswer(){
@@ -109,8 +135,4 @@ class MainActivity : AppCompatActivity(), View.OnClickListener{
         textTxt.text = phrase
     }
 
-    private fun sendAndHideKeyboard(){
-        sendAnswer()
-        hideKeyboard()
-    }
 }
