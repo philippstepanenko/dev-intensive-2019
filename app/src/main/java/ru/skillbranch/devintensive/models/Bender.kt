@@ -13,20 +13,32 @@ class Bender(var status: Status = Status.NORMAL, var question: Question = Questi
         Question.IDLE -> Question.IDLE.question
     }
 
-    fun listenAnswer(answer:String) : Pair<String, Triple<Int, Int, Int>>{
-        return if (question.answers.contains(answer)){
-            //if (question.name == Question.IDLE.name)
+    fun listenAnswer(answer: String) : Pair<String, Triple<Int, Int, Int>> {
+        return when(question){
+            Question.IDLE -> question.question to status.color
+            else -> "${checkAnswer(answer)}\n${question.question}" to status.color
+        }
+    }
+
+    private fun checkAnswer(answer: String) : String{
+        return if(question.answers.contains(answer)) {
             question = question.nextQuestion()
-            "Отлично - ты справился\n${question.question}" to status.color
+            "Отлично - ты справился"
         }else{
-            status = status.nextStatus()
-            if (status.name == Status.NORMAL.name){
-                "Это неправильный ответ. Давай все по новой\n${question.question}" to status.color
+            if (status == Status.CRITICAL){
+                reset()
+                "Это неправильный ответ. Давай все по новой"
             }else{
-                "Это неправильный ответ\n${question.question}" to status.color
+                status = status.nextStatus()
+                "Это неправильный ответ"
             }
         }
 
+    }
+
+    private fun reset(){
+        status = Status.NORMAL
+        question = Question.NAME
     }
 
     enum class Status (val color: Triple<Int, Int, Int>){
@@ -36,6 +48,13 @@ class Bender(var status: Status = Status.NORMAL, var question: Question = Questi
         CRITICAL(Triple(255, 0, 0));
 
         fun nextStatus():Status{
+            return when {
+                this.ordinal < values().lastIndex -> values()[this.ordinal+1]
+                else                              -> values()[0]
+            }
+        }
+
+        fun nextStatus2():Status{
             return if(this.ordinal < values().lastIndex){
                 values()[this.ordinal+1]
             }else{
