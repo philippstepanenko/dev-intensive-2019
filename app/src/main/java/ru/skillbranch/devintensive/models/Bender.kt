@@ -1,7 +1,5 @@
 package ru.skillbranch.devintensive.models
 
-import android.provider.Contacts.PresenceColumns.IDLE
-
 class Bender(var status: Status = Status.NORMAL, var question: Question = Question.NAME) {
 
     fun askQuestion(): String = when (question) {
@@ -54,13 +52,6 @@ class Bender(var status: Status = Status.NORMAL, var question: Question = Questi
             }
         }
 
-        fun nextStatus2():Status{
-            return if(this.ordinal < values().lastIndex){
-                values()[this.ordinal+1]
-            }else{
-                values()[0]
-            }
-        }
     }
 
     enum class Question (val question: String, val answers: List<String>){
