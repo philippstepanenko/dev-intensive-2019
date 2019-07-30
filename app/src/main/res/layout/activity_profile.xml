@@ -8,4 +8,16 @@
         tools:context=".ui.profile.ProfileActivity"
         android:orientation="vertical">
 
+    <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <ru.skillbranch.devintensive.ui.custom.AspectRatioImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/profile_bg"
+                android:scaleType="centerCrop"
+                app:aspectRatio="1.78"/>
+
+    </FrameLayout>
+
 </LinearLayout>
