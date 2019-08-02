@@ -27,8 +27,7 @@ class CircleImageView @JvmOverloads constructor(
     }
 
     private var borderColor = DEFAULT_BORDER_COLOR
-    //private var borderWidth = dp2Px(DEFAULT_BORDER_WIDTH)
-    private var borderWidth = DEFAULT_BORDER_WIDTH
+    private var borderWidth = convertDp2Px(DEFAULT_BORDER_WIDTH)
 
     // Rect with float values
     private val drawableRect = RectF()
@@ -63,7 +62,8 @@ class CircleImageView @JvmOverloads constructor(
         if(attrs!=null){
             val c = context.obtainStyledAttributes(attrs, R.styleable.CircleImageView)
             borderColor = c.getColor(R.styleable.CircleImageView_cv_borderColor, DEFAULT_BORDER_COLOR)
-            borderWidth = c.getDimension(R.styleable.CircleImageView_cv_borderWidth, DEFAULT_BORDER_WIDTH.toFloat()).toInt()
+            borderWidth = c.getDimensionPixelSize(R.styleable.CircleImageView_cv_borderWidth, DEFAULT_BORDER_WIDTH)
+
 
             Log.d("M_Init_CircleImageView", "init")
 
@@ -79,11 +79,12 @@ class CircleImageView @JvmOverloads constructor(
         }
     }
 
-    @Dimension fun getBorderWidth() = borderWidth
+    @Dimension fun getBorderWidth() = convertPx2Dp(borderWidth)
 
     fun setBorderWidth(@Dimension dp: Int) {
-        if (dp != borderWidth){
-            borderWidth = dp
+        val newWidth = convertDp2Px(dp)
+        if (newWidth != borderWidth){
+            borderWidth = newWidth
             setup()
         }
     }
@@ -208,13 +209,11 @@ class CircleImageView @JvmOverloads constructor(
         bitmapPaint.isAntiAlias = true
         bitmapPaint.shader = bitmapShader
 
-        val borderWidthPx = borderWidth * context.applicationContext.resources.displayMetrics.density
-
         with(borderPaint){
             style = Paint.Style.STROKE
             isAntiAlias = true
             color = borderColor
-            strokeWidth = borderWidthPx
+            strokeWidth = borderWidth.toFloat()
         }
 
         with(circleBackgroundPaint) {
@@ -227,11 +226,11 @@ class CircleImageView @JvmOverloads constructor(
         bitmapWidth = bitmap!!.width
 
         borderRect.set(calculateBounds())
-        borderRadius = min((borderRect.height() - borderWidthPx) / 2.0f, (borderRect.width() - borderWidthPx) / 2.0f)
+        borderRadius = min((borderRect.height() - borderWidth) / 2.0f, (borderRect.width() - borderWidth) / 2.0f)
 
         drawableRect.set(borderRect)
-        if (!isBorderOverlay && borderWidthPx > 0) {
-            drawableRect.inset(borderWidthPx - 1.0f, borderWidthPx - 1.0f)
+        if (!isBorderOverlay && borderWidth > 0) {
+            drawableRect.inset(borderWidth - 1.0f, borderWidth - 1.0f)
         }
         drawableRadius = Math.min(drawableRect.height() / 2.0f, drawableRect.width() / 2.0f)
 
@@ -273,4 +272,6 @@ class CircleImageView @JvmOverloads constructor(
         bitmapShader!!.setLocalMatrix(shaderMatrix)
     }
 
+    private fun convertDp2Px(dp:Int): Int = (dp * resources.displayMetrics.density + 0.5f).toInt()
+    private fun convertPx2Dp(px:Int): Int = (px / resources.displayMetrics.density + 0.5f).toInt()
 }
