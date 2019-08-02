@@ -6,12 +6,15 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.text.TextPaint
 import android.util.AttributeSet
 import android.util.Log
+import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.annotation.Dimension
 import androidx.annotation.DrawableRes
 import androidx.appcompat.widget.AppCompatImageView
+import androidx.core.graphics.drawable.toBitmap
 import ru.skillbranch.devintensive.R
 import kotlin.math.min
 
@@ -24,6 +27,12 @@ class CircleImageView @JvmOverloads constructor(
     companion object{
         private const val DEFAULT_BORDER_COLOR = Color.WHITE
         private const val DEFAULT_BORDER_WIDTH = 2
+
+        private var textPaint: TextPaint = TextPaint(Paint.ANTI_ALIAS_FLAG)
+        private var text: String? = null
+
+        private var textSize:Int = 16
+        private var textColor = DEFAULT_BORDER_COLOR
     }
 
     private var borderColor = DEFAULT_BORDER_COLOR
@@ -61,11 +70,16 @@ class CircleImageView @JvmOverloads constructor(
     init {
         if(attrs!=null){
             val c = context.obtainStyledAttributes(attrs, R.styleable.CircleImageView)
-            borderColor = c.getColor(R.styleable.CircleImageView_cv_borderColor, DEFAULT_BORDER_COLOR)
+
+            setIntBorderColor(c.getColor(R.styleable.CircleImageView_cv_borderColor, borderColor))
             borderWidth = c.getDimensionPixelSize(R.styleable.CircleImageView_cv_borderWidth, DEFAULT_BORDER_WIDTH)
 
-
             Log.d("M_Init_CircleImageView", "init")
+
+            text = c.getString(R.styleable.CircleImageView_cv_text)
+
+            setTextSize(c.getDimensionPixelSize(R.styleable.CircleImageView_cv_textSize, textSize))
+            setIntTextColor(c.getColor(R.styleable.CircleImageView_cv_textColor, textColor))
 
             c.recycle()
 
@@ -91,30 +105,39 @@ class CircleImageView @JvmOverloads constructor(
 
     fun getBorderColor() = borderColor
 
-
-    fun setBorderColor(hex:String){
-        setIntBorderColor(Integer.parseInt(hex,16))
-    }
+    fun setBorderColor(hex:String) = setIntBorderColor(Color.parseColor(hex))
 
     fun setBorderColor(@ColorRes colorId: Int) {
         setIntBorderColor(resources.getColor(colorId, context.theme))
     }
 
-    fun setIntBorderColor(color: Int) {
-        if (color != borderColor) {
-            borderColor = color
+    private fun setIntBorderColor(@ColorInt colorValue: Int) {
+        if (colorValue != borderColor) {
+            borderColor = colorValue
             borderPaint.color = borderColor
             invalidate()
         }
     }
 
+    fun setText(newText:String?){
+        text = newText
+        setup()
+    }
+
     override fun onDraw(canvas: Canvas) {
-        bitmap?:return
+        bitmap ?: return
 
         if (borderWidth > 0) canvas.drawCircle(borderRect.centerX(), borderRect.centerY(), borderRadius, borderPaint)
 
         canvas.drawCircle(drawableRect.centerX(), drawableRect.centerY(), drawableRadius, bitmapPaint)
 
+        if (text != null) {
+            val centerX = Math.round(canvas.width * 0.5f)
+            val centerY = Math.round(canvas.height * 0.5f)
+            val textWidth = textPaint.measureText(text) * 0.5f
+            val textBaseLineHeight = textPaint.fontMetrics.ascent * -0.4f
+            canvas.drawText(text.toString(), centerX - textWidth, centerY + textBaseLineHeight, textPaint)
+        }
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -138,8 +161,15 @@ class CircleImageView @JvmOverloads constructor(
     }
 
     override fun setImageDrawable(drawable: Drawable?) {
-        super.setImageDrawable(drawable)
-        initializeBitmap()
+        if (drawable is ColorDrawable) {
+            val image = Bitmap.createBitmap(250, 250, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(image)
+            canvas.drawColor(drawable.color)
+            setImageBitmap(image)
+        } else {
+            super.setImageDrawable(drawable)
+            initializeBitmap()
+        }
     }
 
     override fun setImageResource(@DrawableRes resId: Int) {
@@ -185,7 +215,7 @@ class CircleImageView @JvmOverloads constructor(
     }
 
     private fun initializeBitmap() {
-        bitmap = getBitmapFromDrawable(drawable)
+        bitmap = drawable.toBitmap()
         setup()
     }
 
@@ -270,6 +300,20 @@ class CircleImageView @JvmOverloads constructor(
         shaderMatrix.postTranslate((dx + 0.5f).toInt() + drawableRect.left, (dy + 0.5f).toInt() + drawableRect.top)
 
         bitmapShader!!.setLocalMatrix(shaderMatrix)
+    }
+
+    fun setTextSize(size:Int) {
+        textSize = size
+        textPaint.setTextSize(textSize * resources.displayMetrics.scaledDensity)
+    }
+
+    fun setTextColor(@ColorRes colorId:Int) = setIntTextColor(resources.getColor(colorId,context.theme))
+
+    fun setTextColor(hexColor:String) = setIntTextColor(Color.parseColor(hexColor))
+
+    private fun setIntTextColor(@ColorInt colorValue:Int) {
+        textColor = colorValue
+        textPaint.setColor(textColor)
     }
 
     private fun convertDp2Px(dp:Int): Int = (dp * resources.displayMetrics.density + 0.5f).toInt()
