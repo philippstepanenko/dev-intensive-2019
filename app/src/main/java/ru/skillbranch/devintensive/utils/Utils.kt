@@ -32,7 +32,7 @@ object Utils {
     }
 
 
-    fun transliteration(payload: String, divider: String = " ") = payload.map {
+    fun transliteration(payload: String, divider: String = " ") = payload.trim().map {
         val res = when (it.toLowerCase()) {
             'а' -> "a"
             'б' -> "b"
