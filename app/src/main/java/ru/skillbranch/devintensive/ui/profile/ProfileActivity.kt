@@ -13,7 +13,6 @@ import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.activity_profile.*
@@ -116,6 +115,7 @@ class ProfileActivity : AppCompatActivity(){
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                wr_repository.isErrorEnabled = !validateURL(s)
                 wr_repository.error = if (!validateURL(s)) "Невалидный адрес репозитория" else ""
             }
 
