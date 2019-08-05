@@ -13,7 +13,6 @@ class Profile (
 ) {
 
     val nickName : String = Utils.transliteration("$firstName $lastName", "_")
-    //val nickName : String = "John Doe"
     val rank : String = "Junior Android Developer"
 
     fun toMap():Map<String, Any> = mapOf(
